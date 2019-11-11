@@ -44,10 +44,11 @@
             </StackPanel>
         </materialDesign:PopupBox>
         <Button
+            x:Name="verifyBtn"
             Margin="0,0,100,30"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
-            Click="Button_Click"
+            Click="VerifyBtn_Click"
             Style="{StaticResource MaterialDesignFloatingActionDarkButton}"
             ToolTip="Verify Signature">
             <materialDesign:PackIcon
@@ -221,5 +222,11 @@
                 </StackPanel>
             </StackPanel>
         </StackPanel>
+        <materialDesign:Snackbar x:Name="SnackbarTwo" IsActive="False">
+            <materialDesign:SnackbarMessage
+                ActionClick="SnackbarMessage_ActionClick"
+                ActionContent="Ok"
+                Content="Content" />
+        </materialDesign:Snackbar>
     </Grid>
 </Window>

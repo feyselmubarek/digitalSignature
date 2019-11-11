@@ -47,13 +47,13 @@ namespace Digital_Signature
 
         private void ConnectServerBtn_Click(object sender, RoutedEventArgs e)
         {
-            if (filePathTextBox.Text.ToString() != "")
+            if (ipAddressTextBox.Text.ToString() != "" || portTextBox.Text.ToString() != "")
             {
                 ExecuteClient();
             }
             else
             {
-                MessageBox.Show("Enter data!!");
+                MessageBox.Show("Enter IpAdress and Port number!!");
             }
         }
 
@@ -152,7 +152,7 @@ namespace Digital_Signature
 
                     consoleTextBox.AppendText($"Shell >> Socket connected to -> {0} " + sender.RemoteEndPoint.ToString() + "\n");
 
-                    byte[] messageSent = Encoding.ASCII.GetBytes(filePathTextBox.Text.ToString() + "<EOF>");
+                    byte[] messageSent = Encoding.ASCII.GetBytes("Client asking for Data  <EOF>");
                     int byteSent = sender.Send(messageSent);
                     
                     byte[] messageReceived = new byte[1024];
@@ -216,29 +216,70 @@ namespace Digital_Signature
             hashFile.MakeHashKeys();
             string publicKey = hashFile.getPublicKey();
             text_to_send = hashFile.GenerateSignature();
-            text_to_send = text_to_send + "~" + publicKey + "~" + file;
-
+            
             this.Dispatcher.Invoke(() =>
             {
                 consoleTextBox.AppendText("\nShell >> publicKey is " + publicKey + "\n");
+                consoleTextBox.AppendText("\nShell >> sidnature is " + text_to_send+ "\n");
                 progressTextBlock.Visibility = Visibility.Visible;
                 progressTextBlock.Text = "Hashing Finished...";
                 progressBar.Visibility = Visibility.Hidden;
                 checkedBtn.Visibility = Visibility.Visible;
             });
+            text_to_send = text_to_send + "~" + publicKey + "~" + file;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void VerifyBtn_Click(object sender, RoutedEventArgs e)
         {
             string[] arr = text_to_recieved.Split('~');
-            string publicKey = arr[0];
-            string signature = arr[1];
+            Console.WriteLine(arr);
+            string signature = arr[0];
+            string publicKey = arr[1];
             string filePath = arr[2];
+            string fileSrc;
+
+            consoleTextBox.AppendText("\n\nShell >> publicKey : " + publicKey + "\n");
+            consoleTextBox.AppendText("\nShell >> sig : " + signature + "\n");
+            consoleTextBox.AppendText("\nShell >> filePath: " + filePath + "\n");
 
             byte[] publicKeyDerRestored = Convert.FromBase64String(publicKey);
             RsaKeyParameters publicKeyRestored = (RsaKeyParameters)PublicKeyFactory.CreateKey(publicKeyDerRestored);
 
-            hashFile.VerifySignature(signature);
+            Console.WriteLine("FilePath:" + filePath);
+            using (var fileStream = new FileStream(filePath.Substring(0, (filePath.Length - 5)), FileMode.Open, FileAccess.Read))
+            {
+                var sr = new StreamReader(fileStream, Encoding.UTF8);
+                string content = sr.ReadToEnd();
+                fileSrc = content;
+                hashFile = new HashFIle(content);
+            }
+
+            Console.WriteLine("sig:" + signature);
+            Console.WriteLine("file:" + fileSrc);
+            Console.WriteLine("key:" + publicKeyRestored);
+
+            Console.WriteLine("sig:" + signature == null);
+            Console.WriteLine("file:" + Encoding.ASCII.GetBytes(fileSrc) == null);
+            Console.WriteLine("key:" + Encoding.ASCII.GetBytes(signature) == null);
+
+            
+            bool value = hashFile.VerifySignature(publicKeyRestored, Encoding.ASCII.GetBytes(fileSrc), Encoding.ASCII.GetBytes(signature));
+
+            if (value == true)
+            {
+                SnackbarTwo.Message.Content = "Verifed Succesfuly";
+                SnackbarTwo.IsActive = true;
+            }
+            else
+            {
+                SnackbarTwo.Message.Content = "Verification Failed";
+                SnackbarTwo.IsActive = true;
+            }
+        }
+
+        private void SnackbarMessage_ActionClick(object sender, RoutedEventArgs e)
+        {
+            SnackbarTwo.IsActive = false;
         }
     }
 }

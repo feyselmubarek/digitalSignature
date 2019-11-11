@@ -72,7 +72,7 @@ namespace Digital_Signature.Utilities
             return sOutput.ToString();
         }
 
-        public bool VerifySignature(byte[] signature)
+        public bool VerifySignature(RsaKeyParameters publicKey, byte[] tmpSource, byte[] signature)
         {
             ISigner sign1 = SignerUtilities.GetSigner(PkcsObjectIdentifiers.Sha1WithRsaEncryption.Id);
             sign1.Init(false, publicKey);
