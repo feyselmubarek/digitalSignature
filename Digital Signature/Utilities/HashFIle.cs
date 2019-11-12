@@ -6,11 +6,8 @@ using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security;
 using Org.BouncyCastle.X509;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Digital_Signature.Utilities
 {
@@ -20,6 +17,7 @@ namespace Digital_Signature.Utilities
         private RsaKeyParameters privateKey;
         public RsaKeyParameters publicKey;
         private byte[] tmpSource;
+        private byte[] signature;
 
         public HashFIle(string SourceData)
         {
@@ -67,12 +65,54 @@ namespace Digital_Signature.Utilities
             StringBuilder sOutput = new StringBuilder(arrInput.Length);
             for (i = 0; i < arrInput.Length; i++)
             {
-                sOutput.Append(arrInput[i].ToString("X").ToLower());
+                sOutput.Append(arrInput[i].ToString("X"));
             }
             return sOutput.ToString();
         }
 
-        public bool VerifySignature(RsaKeyParameters publicKey, byte[] tmpSource, byte[] signature)
+        //private static string StringToByteArray(string arrInput)
+        //{
+        //    int i;
+        //    StringBuilder sOutput = new StringBuilder(arrInput.Length);
+        //    byte[] newArray;
+        //    for (i = 0; i < arrInput.Length; i++)
+        //    {
+        //        newArray += Append(arrInput[i].ToString("X"));
+        //    }
+        //    return sOutput.ToString();
+        //}
+
+        public static bool VerifySignature(RsaKeyParameters publicKey, byte[] tmpSource, byte[] signature)
+        {
+            ISigner sign1 = SignerUtilities.GetSigner(PkcsObjectIdentifiers.Sha1WithRsaEncryption.Id);
+            sign1.Init(false, publicKey);
+            sign1.BlockUpdate(tmpSource, 0, tmpSource.Length);
+            bool status = sign1.VerifySignature(signature);
+
+            return status;
+        }
+
+        public bool VerifySelfSignature(byte[] tmpSource)
+        {
+            ISigner sign1 = SignerUtilities.GetSigner(PkcsObjectIdentifiers.Sha1WithRsaEncryption.Id);
+            sign1.Init(false, publicKey);
+            sign1.BlockUpdate(tmpSource, 0, tmpSource.Length);
+            bool status = sign1.VerifySignature(signature);
+
+            return status;
+        }
+
+        public bool VerifyDoubleSignature(byte[] tmpSource, RsaKeyParameters publicKey)
+        {
+            ISigner sign1 = SignerUtilities.GetSigner(PkcsObjectIdentifiers.Sha1WithRsaEncryption.Id);
+            sign1.Init(false, publicKey);
+            sign1.BlockUpdate(tmpSource, 0, tmpSource.Length);
+            bool status = sign1.VerifySignature(signature);
+
+            return status;
+        }
+
+        public bool VerifyTripleSignature(byte[] tmpSource, RsaKeyParameters publicKey, byte[] signature)
         {
             ISigner sign1 = SignerUtilities.GetSigner(PkcsObjectIdentifiers.Sha1WithRsaEncryption.Id);
             sign1.Init(false, publicKey);
@@ -88,8 +128,10 @@ namespace Digital_Signature.Utilities
             sign.Init(true, privateKey);
             sign.BlockUpdate(tmpSource, 0, tmpSource.Length);
             byte[] signature = sign.GenerateSignature();
+            this.signature = signature;
 
-            return ByteArrayToString(signature);
+            return Encoding.ASCII.GetString(signature);
         }
     }
 }
+ 

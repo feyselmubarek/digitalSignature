@@ -21,6 +21,7 @@ namespace Digital_Signature
         public StreamWriter STW;
         public string receive;
         public string text_to_send;
+        public byte[] byte_to_send;
         public string text_to_recieved;
         private string file;
         private HashFIle hashFile;
@@ -220,22 +221,55 @@ namespace Digital_Signature
             this.Dispatcher.Invoke(() =>
             {
                 consoleTextBox.AppendText("\nShell >> publicKey is " + publicKey + "\n");
-                consoleTextBox.AppendText("\nShell >> sidnature is " + text_to_send+ "\n");
+                consoleTextBox.AppendText("\nShell >> sidnature is " + text_to_send + "\n");
                 progressTextBlock.Visibility = Visibility.Visible;
                 progressTextBlock.Text = "Hashing Finished...";
                 progressBar.Visibility = Visibility.Hidden;
                 checkedBtn.Visibility = Visibility.Visible;
             });
-            text_to_send = text_to_send + "~" + publicKey + "~" + file;
+            text_to_send = text_to_send + "!" + publicKey + "!" + file;
         }
 
         private void VerifyBtn_Click(object sender, RoutedEventArgs e)
         {
-            string[] arr = text_to_recieved.Split('~');
-            Console.WriteLine(arr);
+            verifySelf();
+        }
+
+        private void SnackbarMessage_ActionClick(object sender, RoutedEventArgs e)
+        {
+            SnackbarTwo.IsActive = false;
+        }
+
+        public void verifySelf()
+        {
+            using (var fileStream = new FileStream(filePathTextBox.Text.ToString(), FileMode.Open, FileAccess.Read))
+            {
+                var sr = new StreamReader(fileStream, Encoding.UTF8);
+                string content = sr.ReadToEnd();
+
+                bool status = hashFile.VerifySelfSignature(Encoding.ASCII.GetBytes(content));
+
+                if (status == true)
+                {
+                    SnackbarTwo.Message.Content = "Verifed Succesfuly";
+                    SnackbarTwo.IsActive = true;
+                }
+                else
+                {
+                    SnackbarTwo.Message.Content = "Verification Failed";
+                    SnackbarTwo.IsActive = true;
+                }
+            }
+        }
+
+        public void verifyForSocket()
+        {
+            string[] arr = text_to_recieved.Split('!');
+
             string signature = arr[0];
             string publicKey = arr[1];
             string filePath = arr[2];
+
             string fileSrc;
 
             consoleTextBox.AppendText("\n\nShell >> publicKey : " + publicKey + "\n");
@@ -245,27 +279,16 @@ namespace Digital_Signature
             byte[] publicKeyDerRestored = Convert.FromBase64String(publicKey);
             RsaKeyParameters publicKeyRestored = (RsaKeyParameters)PublicKeyFactory.CreateKey(publicKeyDerRestored);
 
-            Console.WriteLine("FilePath:" + filePath);
             using (var fileStream = new FileStream(filePath.Substring(0, (filePath.Length - 5)), FileMode.Open, FileAccess.Read))
             {
                 var sr = new StreamReader(fileStream, Encoding.UTF8);
                 string content = sr.ReadToEnd();
                 fileSrc = content;
-                hashFile = new HashFIle(content);
             }
 
-            Console.WriteLine("sig:" + signature);
-            Console.WriteLine("file:" + fileSrc);
-            Console.WriteLine("key:" + publicKeyRestored);
+            bool status = HashFIle.VerifySignature(publicKeyRestored, Encoding.ASCII.GetBytes(fileSrc), Encoding.ASCII.GetBytes(signature));
 
-            Console.WriteLine("sig:" + signature == null);
-            Console.WriteLine("file:" + Encoding.ASCII.GetBytes(fileSrc) == null);
-            Console.WriteLine("key:" + Encoding.ASCII.GetBytes(signature) == null);
-
-            
-            bool value = hashFile.VerifySignature(publicKeyRestored, Encoding.ASCII.GetBytes(fileSrc), Encoding.ASCII.GetBytes(signature));
-
-            if (value == true)
+            if (status == true)
             {
                 SnackbarTwo.Message.Content = "Verifed Succesfuly";
                 SnackbarTwo.IsActive = true;
@@ -275,11 +298,6 @@ namespace Digital_Signature
                 SnackbarTwo.Message.Content = "Verification Failed";
                 SnackbarTwo.IsActive = true;
             }
-        }
-
-        private void SnackbarMessage_ActionClick(object sender, RoutedEventArgs e)
-        {
-            SnackbarTwo.IsActive = false;
         }
     }
 }
