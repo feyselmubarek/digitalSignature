@@ -5,14 +5,11 @@ link => https://github.com/feyselmubarek/digitalSignature/blob/master/Digital%20
 
 <h3>Steps for Checking</h3>
 
-<h4>1. Add File</h4>
-![imageScreenShot](./1st.png)
-
-<h4>2. Make Hash</h4>
-![imageScreenShot2](./2nd.png)
-
-<h4>3. Check for hashing to complete</h4>
-![imageScreenShot3](./3rd.png)
-
-<h4>4. Verify</h4>
-![imageScreenShot4](./4th.png)
+## 1. Add File
+![Image of Yaktocat](./1st.png)
+## 2. Hash File
+![Image of Yaktocat](./2nd.png)
+## 3. Check Hashing to be finished
+![Image of Yaktocat](./3rd.png)
+## 4. Verify the signature
+![Image of Yaktocat](./4th.png)
