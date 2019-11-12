@@ -9,10 +9,10 @@ link => https://github.com/feyselmubarek/digitalSignature/blob/master/Digital%20
 ![imageScreenShot](./1st.png)
 
 <h4>2. Make Hash</h4>
-![imageScreenShot](./2nd.png)
+![imageScreenShot2](./2nd.png)
 
 <h4>3. Check for hashing to complete</h4>
-![imageScreenShot](./3rd.png)
+![imageScreenShot3](./3rd.png)
 
 <h4>4. Verify</h4>
-![imageScreenShot](./4th.png)
+![imageScreenShot4](./4th.png)
